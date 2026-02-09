@@ -3,7 +3,7 @@
 ### Installing  (Ubuntu Specific)
 - ```mkdir projects ```
 - ```cd projects```
-  - git clone [https://](https://github.com/CadenMW/MeshGPT.git)
+  - git clone https://github.com/CadenMW/MeshGPT.git
   -cd MeshGPT
   - ``` python -m venv venv```
   - ```sourcce venv/bin/activate```
