@@ -7,8 +7,6 @@ import re
 import logging
 from datetime import datetime
 
-date_time = datetime.now().date()
-
 # This configures logging to save to 'meshgpt.log' 
 # It will APPEND to the file so you don't lose old logs.
 logging.basicConfig(
@@ -24,12 +22,11 @@ logging.basicConfig(
 logging.info("MeshGPT Active: Shared Channel History + Private DMs")
 
 # 1. Setup Connection
-interface = meshtastic.tcp_interface.TCPInterface(hostname="localhost", portNumber=4404)
+interface = meshtastic.tcp_interface.TCPInterface(hostname="localhost", portNumber=4403)
 
 # 2. Storage for sessions
 # We now store by "Conversation ID" (either a sender_id or a channel_number)
 user_sessions = {}
-SYSTEM_PROMPT = {"role": "system", "content": f"The current date is {date_time}. You are MeshGPT, an AI chatbot running on a Meshtastic mesh network serving the azmsh community in Arizona. Each message will begin with the user's username. Be concise, your replies must be less than 175 characters."}
 
 def on_receive(packet, interface):
     global user_sessions
@@ -37,6 +34,9 @@ def on_receive(packet, interface):
         if 'decoded' in packet and packet['decoded']['portnum'] == 'TEXT_MESSAGE_APP':
             
             # --- 1. SETUP IDS & INFO ---
+            dt = datetime.now()
+            date_time = dt.strftime("%A, %B %#d %Y %#I:%M%p")
+            SYSTEM_PROMPT = {"role": "system", "content": f"The current date and time is {date_time}. You are MeshGPT, an AI chatbot running on a Meshtastic mesh network serving the azmsh community in Arizona. Each message will begin with the user's username. Be concise, your replies must be less than 175 characters."}
             my_node_num = interface.myInfo.my_node_num
             my_id_str = f"!{hex(my_node_num)[2:]}" 
             target_id = str(packet.get('toId', ""))
@@ -82,7 +82,7 @@ def on_receive(packet, interface):
 
             # --- 6. GENERATE ---
             start_time = time.perf_counter()
-            response = chat(model='llama3.2:1b', messages=user_sessions[conv_id], keep_alive=-1, options={'temperature': 0.2, 'num_predict':50, 'top_p': 0.9, 'repeat_penalty': 1.1, 'num_ctx': 4096, 'top_k': 40})
+            response = chat(model='llama3.2:1b', messages=user_sessions[conv_id], keep_alive=-1, options={'temperature': 0.2, 'num_predict':50, 'num_ctx': 4096})
             gen_time = time.perf_counter() - start_time
             
             ai_reply = response['message']['content']
