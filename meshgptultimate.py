@@ -34,9 +34,6 @@ def on_receive(packet, interface):
         if 'decoded' in packet and packet['decoded']['portnum'] == 'TEXT_MESSAGE_APP':
             
             # --- 1. SETUP IDS & INFO ---
-            dt = datetime.now()
-            date_time = dt.strftime("%A, %B %#d %Y %#I:%M%p")
-            SYSTEM_PROMPT = {"role": "system", "content": f"The current date and time is {date_time}. You are MeshGPT, an AI chatbot running on a Meshtastic mesh network serving the azmsh community in Arizona. Each message will begin with the user's username. Be concise, your replies must be less than 175 characters."}
             my_node_num = interface.myInfo.my_node_num
             my_id_str = f"!{hex(my_node_num)[2:]}" 
             target_id = str(packet.get('toId', ""))
@@ -44,7 +41,9 @@ def on_receive(packet, interface):
             channel_index = packet.get('channel', 0) 
             
             user_msg = packet['decoded']['payload'].decode('utf-8')
-            
+            dt = datetime.now()
+            date_time = dt.strftime("%A, %B %#d %Y %#I:%M%p")
+            SYSTEM_PROMPT = {"role": "system", "content": f"The current date and time is {date_time}. You are MeshGPT, an AI chatbot running on a Meshtastic mesh network serving the azmsh community in Arizona. Each message will begin with the user's username and that is what you will refer to them as. Be concise, your replies must be less than 175 characters."}
             # --- 2. GET SENDER NAME (For "Reply" styling) ---
             # Try to find the user's "Long Name" or "Short Name" in the node DB
             sender_name = sender_id # Default to ID if name not found
