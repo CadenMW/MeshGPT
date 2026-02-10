@@ -1,2 +1,5 @@
 meshtastic
 ollama
+re
+logging
+datetime
